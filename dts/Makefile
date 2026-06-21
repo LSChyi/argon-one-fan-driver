@@ -1,2 +1,2 @@
 all:
-	dtc -@ -I dts -O dtb -o aragon-one-fan.dtbo aragon-one-fan-overlay.dts
+	dtc -@ -I dts -O dtb -o argon-one-fan.dtbo argon-one-fan-overlay.dts
