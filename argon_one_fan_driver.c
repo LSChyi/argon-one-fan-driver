@@ -102,6 +102,7 @@ ATTRIBUTE_GROUPS(argon_one_fan);
 
 static int argon_one_fan_probe(struct i2c_client *client) {
   struct argon_one_fan_data *data;
+  int ret;
 
   if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE))
     return -EIO;
@@ -131,6 +132,13 @@ static int argon_one_fan_probe(struct i2c_client *client) {
   }
 
   i2c_set_clientdata(client, data);
+
+  ret = argon_one_fan_set_hardware_speed(data, 0);
+  if (ret) {
+    dev_err(&client->dev, "Failed to initialize fan state to 0: %d\n", ret);
+    return ret;
+  }
+
   dev_info(&client->dev, "argon One Fan Driver with Thermal Support Loaded\n");
   return 0;
 }
