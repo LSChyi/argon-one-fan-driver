@@ -11,7 +11,7 @@
             #size-cells = <0>;
             status = "okay";
 
-            my_fan: i2c_fan@1a {
+            aragon_one_fan: aragon_one_fan@1a {
                 compatible = "aragon_one_fan";
                 reg = <0x1a>;
                 #cooling-cells = <2>;
@@ -24,7 +24,7 @@
         target = <&cpu_thermal>;
         __overlay__ {
             trips {
-                fan_trip: fan-trip {
+                argon_one_fan_trip: argon-one-fan-trip {
                     temperature = <42000>;
                     hysteresis = <3000>;
                     type = "active";
@@ -33,8 +33,8 @@
 
             cooling-maps {
                 map0 {
-                    trip = <&fan_trip>;
-                    cooling-device = <&my_fan 0 10>;
+                    trip = <&argon_one_fan_trip>;
+                    cooling-device = <&argon_one_fan 0 10>;
                 };
             };
         };
