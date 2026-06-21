@@ -1,0 +1,42 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&i2c1>;
+        __overlay__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            status = "okay";
+
+            my_fan: i2c_fan@1a {
+                compatible = "aragon_one_fan";
+                reg = <0x1a>;
+                #cooling-cells = <2>;
+                status = "okay";
+            };
+        };
+    };
+
+    fragment@1 {
+        target = <&cpu_thermal>;
+        __overlay__ {
+            trips {
+                fan_trip: fan-trip {
+                    temperature = <42000>;
+                    hysteresis = <3000>;
+                    type = "active";
+                };
+            };
+
+            cooling-maps {
+                map0 {
+                    trip = <&fan_trip>;
+                    cooling-device = <&my_fan 0 10>;
+                };
+            };
+        };
+    };
+};
