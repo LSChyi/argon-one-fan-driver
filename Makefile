@@ -1,4 +1,4 @@
-obj-m += aragon_one_fan_driver.o
+obj-m += argon_one_fan_driver.o
 
 # Point to the running kernel's build directory
 KDIR ?= /lib/modules/$(shell uname -r)/build
