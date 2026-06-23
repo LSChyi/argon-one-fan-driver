@@ -12,21 +12,20 @@ struct argon_one_fan_data {
   struct device *hwmon_dev;
   struct thermal_cooling_device *cdev; /* Thermal cooling device handle */
   struct mutex update_lock;
-  u8 pwm_val;
+  u8 device_val;
 };
 
 /* Internal helper to send speed to the physical hardware (0-100) */
 static int argon_one_fan_set_hardware_speed(struct argon_one_fan_data *data,
-                                             u8 duty_cycle) {
+                                             u8 device_val) {
   int ret;
-  u8 device_val = (u8)((duty_cycle * 100) / 255);
 
   ret = i2c_smbus_write_byte(data->client, device_val);
   if (ret < 0) {
     dev_err(&data->client->dev, "I2C Write failed\n");
     return ret;
   }
-  data->pwm_val = duty_cycle;
+  data->device_val = device_val;
   return 0;
 }
 
@@ -41,7 +40,7 @@ static int argon_one_fan_get_cur_state(struct thermal_cooling_device *cdev,
   struct argon_one_fan_data *data = cdev->devdata;
 
   mutex_lock(&data->update_lock);
-  *state = (data->pwm_val * 10) / 255;
+  *state = data->device_val / 10;
   mutex_unlock(&data->update_lock);
 
   return 0;
@@ -50,16 +49,13 @@ static int argon_one_fan_get_cur_state(struct thermal_cooling_device *cdev,
 static int argon_one_fan_set_cur_state(struct thermal_cooling_device *cdev,
                                         unsigned long state) {
   struct argon_one_fan_data *data = cdev->devdata;
-  u8 target_pwm;
   int ret;
 
   if (state > 10)
     return -EINVAL;
 
-  target_pwm = (u8)((state * 255) / 10);
-
   mutex_lock(&data->update_lock);
-  ret = argon_one_fan_set_hardware_speed(data, target_pwm);
+  ret = argon_one_fan_set_hardware_speed(data, state * 10);
   mutex_unlock(&data->update_lock);
 
   return ret;
@@ -83,7 +79,7 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
   val = clamp_val(val, 0, 255);
 
   mutex_lock(&data->update_lock);
-  ret = argon_one_fan_set_hardware_speed(data, (u8)val);
+  ret = argon_one_fan_set_hardware_speed(data, (u8)(((u16)val * 100 + 127) / 255));
   mutex_unlock(&data->update_lock);
 
   return ret < 0 ? ret : count;
@@ -92,7 +88,7 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
 static ssize_t show_pwm(struct device *dev, struct device_attribute *attr,
                         char *buf) {
   struct argon_one_fan_data *data = dev_get_drvdata(dev);
-  return sprintf(buf, "%d\n", data->pwm_val);
+  return sprintf(buf, "%d\n", ((u16)data->device_val * 100 + 127) / 255);
 }
 
 static SENSOR_DEVICE_ATTR(pwm1, 0644, show_pwm, set_pwm, 0);
@@ -114,7 +110,7 @@ static int argon_one_fan_probe(struct i2c_client *client) {
 
   data->client = client;
   mutex_init(&data->update_lock);
-  data->pwm_val = 0;
+  data->device_val = 0;
 
   /* Register Hwmon */
   data->hwmon_dev = devm_hwmon_device_register_with_groups(
@@ -139,7 +135,7 @@ static int argon_one_fan_probe(struct i2c_client *client) {
     return ret;
   }
 
-  dev_info(&client->dev, "argon One Fan Driver with Thermal Support Loaded\n");
+  dev_info(&client->dev, "Argon One Fan Driver with Thermal Support Loaded\n");
   return 0;
 }
 
