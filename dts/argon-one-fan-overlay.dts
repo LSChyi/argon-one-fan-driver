@@ -11,7 +11,7 @@
             #size-cells = <0>;
             status = "okay";
 
-            argon_one_fan: argon_one_fan@1a {
+            argon_one_fan: argon-one-fan@1a {
                 compatible = "argon_one_fan";
                 reg = <0x1a>;
                 #cooling-cells = <2>;
