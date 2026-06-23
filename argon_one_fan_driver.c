@@ -89,7 +89,7 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
 static ssize_t show_pwm(struct device *dev, struct device_attribute *attr,
                         char *buf) {
   struct argon_one_fan_data *data = dev_get_drvdata(dev);
-  return sprintf(buf, "%d\n", ((u16)data->device_val * 100 + 127) / 255);
+  return sprintf(buf, "%d\n", ((u16)data->device_val * 255) / 100);
 }
 
 static SENSOR_DEVICE_ATTR(pwm1, 0644, show_pwm, set_pwm, 0);
