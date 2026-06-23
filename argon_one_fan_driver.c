@@ -17,7 +17,7 @@ struct argon_one_fan_data {
 
 /* Internal helper to send speed to the physical hardware (0-100) */
 static int argon_one_fan_set_hardware_speed(struct argon_one_fan_data *data,
-                                             u8 device_val) {
+                                            u8 device_val) {
   int ret;
 
   ret = i2c_smbus_write_byte(data->client, device_val);
@@ -30,13 +30,13 @@ static int argon_one_fan_set_hardware_speed(struct argon_one_fan_data *data,
 }
 
 static int argon_one_fan_get_max_state(struct thermal_cooling_device *cdev,
-                                        unsigned long *state) {
+                                       unsigned long *state) {
   *state = 10;
   return 0;
 }
 
 static int argon_one_fan_get_cur_state(struct thermal_cooling_device *cdev,
-                                        unsigned long *state) {
+                                       unsigned long *state) {
   struct argon_one_fan_data *data = cdev->devdata;
 
   mutex_lock(&data->update_lock);
@@ -47,7 +47,7 @@ static int argon_one_fan_get_cur_state(struct thermal_cooling_device *cdev,
 }
 
 static int argon_one_fan_set_cur_state(struct thermal_cooling_device *cdev,
-                                        unsigned long state) {
+                                       unsigned long state) {
   struct argon_one_fan_data *data = cdev->devdata;
   int ret;
 
@@ -79,7 +79,8 @@ static ssize_t set_pwm(struct device *dev, struct device_attribute *attr,
   val = clamp_val(val, 0, 255);
 
   mutex_lock(&data->update_lock);
-  ret = argon_one_fan_set_hardware_speed(data, (u8)(((u16)val * 100 + 127) / 255));
+  ret = argon_one_fan_set_hardware_speed(data,
+                                         (u8)(((u16)val * 100 + 127) / 255));
   mutex_unlock(&data->update_lock);
 
   return ret < 0 ? ret : count;
@@ -103,8 +104,8 @@ static int argon_one_fan_probe(struct i2c_client *client) {
   if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE))
     return -EIO;
 
-  data = devm_kzalloc(&client->dev, sizeof(struct argon_one_fan_data),
-                      GFP_KERNEL);
+  data =
+      devm_kzalloc(&client->dev, sizeof(struct argon_one_fan_data), GFP_KERNEL);
   if (!data)
     return -ENOMEM;
 
@@ -140,7 +141,7 @@ static int argon_one_fan_probe(struct i2c_client *client) {
 }
 
 static const struct i2c_device_id argon_one_fan_id[] = {{"argon_one_fan", 0},
-                                                         {}};
+                                                        {}};
 MODULE_DEVICE_TABLE(i2c, argon_one_fan_id);
 
 static struct i2c_driver argon_one_fan_driver = {
